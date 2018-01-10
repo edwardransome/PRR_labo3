@@ -2,6 +2,7 @@ package machine;
 
 import javafx.scene.chart.PieChart;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -30,6 +31,15 @@ public class Site {
         } catch (SocketException e) {
             System.err.println("Erreur lors de l'initialisation du socket du site " + id + ".");
             e.printStackTrace();
+        }
+
+        electionManager = new Thread() {
+            while(true){ //Boucle principale
+                byte[] buffer = new byte[255]; //TODO constante
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+
+                socket.receive(packet);
+            }
         }
     }
 
