@@ -122,7 +122,21 @@ public class Site {
     }
 
     private void initialiseElection(){
+        estEnElection = true;
 
+        ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_ANNONCE);
+        //L'index de notre liste correspond au site, donc les sites non
+        //initialisés ont une aptitude initiale de -1
+        byteBuffer.put(Constantes.ANNONCE);
+        for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+            byteBuffer.putInt(-1);
+        }
+        try {
+            envoi(byteBuffer.array(), null);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'envoi du datagramme");
+            e.printStackTrace();
+        }
     }
 
     private void traiterAnnonce(DatagramPacket paquet) {
@@ -244,8 +258,12 @@ public class Site {
     }
 
     private void envoi(byte[] corps, DatagramPacket paquetOriginal) throws Exception {
-        //On envoie la quittance au précédent
-        envoiQuittance(paquetOriginal);
+
+        //S'il vaut null, ça veut dire qu'on initialise une election
+        if(paquetOriginal != null) {
+            //On envoie la quittance au précédent
+            envoiQuittance(paquetOriginal);
+        }
 
         //On envoie le message au suivant
         DatagramSocket envoiSocket = new DatagramSocket();
