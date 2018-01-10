@@ -4,6 +4,7 @@ import javafx.scene.chart.PieChart;
 
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 
 public class Site {
     //Identifiant du site
@@ -12,6 +13,7 @@ public class Site {
     //Addresse et port du site
     private InetAddress address;
     private int port;
+    private DatagramSocket socket;
 
     //Booléen retournant vrai si élection en cours
     private boolean inElection;
@@ -23,7 +25,12 @@ public class Site {
 
     public Site(int id, int port) {
         this.id = id;
-        socket = new DatagramSocket(port);
+        try {
+            socket = new DatagramSocket(port);
+        } catch (SocketException e) {
+            System.err.println("Erreur lors de l'initialisation du socket du site " + id + ".");
+            e.printStackTrace();
+        }
     }
 
     /**
