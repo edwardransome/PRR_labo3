@@ -170,6 +170,13 @@ public class Site {
     }
 
     /**
+     * @return l'identifiant du site élu actuel
+     */
+    public synchronized int getElu(){
+        return elu;
+    }
+
+    /**
      * Méthode qui envoie une quittance au site qui a envoyé le paquet en paramètre
      * @param paquetOriginal
      * @throws IOException
