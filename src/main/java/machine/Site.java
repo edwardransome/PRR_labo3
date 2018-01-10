@@ -112,14 +112,14 @@ public class Site {
 
     }
 
-    private void envoi(byte[] corps, InetAddress adr, int port) throws Exception {
+    private void envoi(byte[] corps, DatagramPacket paquetOriginal) throws Exception {
         //On envoie la quittance au précédent
-        envoiQuittance();
+        envoiQuittance(paquetOriginal);
 
         //On envoie le message au suivant
         DatagramSocket envoiSocket = new DatagramSocket();
         envoiSocket.send(new DatagramPacket(corps, corps.length,
-                adr, port));
+                InetAddress.getByName(Constantes.ADRESSES_IP[idSuivant]), Constantes.PORTS[idSuivant]));
 
         //On attends la quittance du suivant avec timeout
         byte[] tampon = new byte[Constantes.TAILLE_TAMPON_QUITTANCE];
@@ -146,6 +146,11 @@ public class Site {
                 throw new Exception("Quittance reçue du mauvais site");
             }
         }
+    }
+
+    private void envoiQuittance(DatagramPacket paquetOriginal) throws SocketException {
+        DatagramSocket envoiQuittance = new DatagramSocket();
+        byte[] buffer = new byte[]{Constantes.QUITTANCE, Integer.valueOf(id).byteValue()[3]};
     }
 
     /**
