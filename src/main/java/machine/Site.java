@@ -18,7 +18,7 @@ public class Site {
     private int port;
     private DatagramSocket socket;
 
-    //Booléen retournant vrai si élection en cours
+    //Booléen retournant vrai si on se trouve dans la phase d'élection et false si on se trouve dans la phase de résultat
     private boolean estEnElection;
 
     //Thread gérant l'élection
@@ -35,25 +35,24 @@ public class Site {
             e.printStackTrace();
         }
 
-        electionManager = new Thread(new Runnable(){
+        electionManager = new Thread(() -> {
+            while(true){ //Boucle principale de réception de message
+                byte[] tampon = new byte[Constantes.TAILLE_TAMPON];
+                DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
 
-            public void run() {
-                while(true){ //Boucle principale de réception de message
-                    byte[] tampon = new byte[Constantes.TAILLE_TAMPON];
-                    DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
+                try {
+                    socket.receive(paquet);
+                } catch (IOException e) {
+                    System.err.println("Erreur de reception de paquet");
+                    e.printStackTrace();
+                }
 
-                    try {
-                        socket.receive(paquet);
-                    } catch (IOException e) {
-                        System.err.println("Erreur de reception de paquet");
-                        e.printStackTrace();
-                    }
-
-                    if(paquet.getData()[0] == Constantes.ANNONCE){
-                        traiterAnnonce(paquet);
-                    }else if (paquet.getData()[0] == Constantes.RESULTAT){
-                        traiterResultat(paquet);
-                    }
+                if(paquet.getData()[0] == Constantes.ANNONCE){
+                    traiterAnnonce(paquet);
+                }else if (paquet.getData()[0] == Constantes.RESULTAT){
+                    traiterResultat(paquet);
+                }else{
+                    throw new IllegalArgumentException("Le type du paquet reçu n'est pas reconnu");
                 }
             }
         });
