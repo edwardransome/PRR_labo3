@@ -135,7 +135,7 @@ public class Site {
                 idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
             }
             //Alors envoie le message au suivant
-            envoi(corps, adr, port);
+            envoi(corps, paquetOriginal);
         }
 
         if(paquet.getData()[0] == Constantes.QUITTANCE){
