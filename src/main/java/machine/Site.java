@@ -113,10 +113,10 @@ public class Site {
     }
 
     private void envoi(byte[] corps, InetAddress addr, int port) throws Exception {
-        //On envoit la quittance au précédent
+        //On envoie la quittance au précédent
         envoiQuittance();
 
-        //On envoit le message au suivant
+        //On envoie le message au suivant
         DatagramSocket envoiSocket = new DatagramSocket();
         envoiSocket.send(new DatagramPacket(corps, corps.length,
                 addr, port));
@@ -134,7 +134,7 @@ public class Site {
                 //On a fait tout le tour de l'anneau
                 idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
             }
-            //Alors envoit le message au suivant
+            //Alors envoie le message au suivant
             envoi(corps, addr, port);
         }
 
