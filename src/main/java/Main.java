@@ -1,5 +1,5 @@
 import machine.Site;
-import util.Constants;
+import util.Constantes;
 
 public class Main {
     public static void main(String[] args) {
@@ -7,7 +7,7 @@ public class Main {
             System.err.println("Passez l'id du site a démarré comme unique paramètre");
         }else{
             int id = Integer.parseInt(args[0]);
-            Site site = new Site(id, Constants.BASE_PORT + id);
+            Site site = new Site(id, Constantes.PORT_DEFAUT + id);
         }
 
     }
