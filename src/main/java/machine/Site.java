@@ -31,7 +31,7 @@ public class Site {
     //Thread gérant l'élection
     private Thread electionManager;
     //Thread applicatif
-    private Thread application;
+    private Thread applicatif;
 
     public Site(int id, int port) {
         this.id = id;
@@ -58,16 +58,69 @@ public class Site {
                         e.printStackTrace();
                     }
 
-                    if (paquet.getData()[0] == Constantes.ANNONCE) {
-                        Site.this.traiterAnnonce(paquet);
-                    } else if (paquet.getData()[0] == Constantes.RESULTAT) {
-                        Site.this.traiterResultat(paquet);
-                    } else {
-                        throw new IllegalArgumentException("Le type du paquet reçu n'est pas reconnu");
+                    switch (paquet.getData()[0]) {
+                        case Constantes.ANNONCE:
+                            traiterAnnonce(paquet);
+                            break;
+                        case Constantes.RESULTAT:
+                            traiterResultat(paquet);
+                            break;
+                        case Constantes.CHECK:
+                            try {
+                                envoiQuittance(paquet);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Le type du paquet reçu n'est pas reconnu");
                     }
                 }
             }
         });
+        electionManager.start();
+
+        applicatif = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int PERIODE_CHECK = 2000;
+
+                initialiseElection();
+
+                while (true) {
+
+                    int currentElu = getElu();
+
+                    try {
+                        DatagramSocket check = new DatagramSocket();
+                        byte[] tampon = new byte[]{Constantes.CHECK, Integer.valueOf(id).byteValue()};
+                        check.send(new DatagramPacket(tampon, tampon.length, InetAddress.getByName(Constantes.ADRESSES_IP[currentElu]), Constantes.PORTS[currentElu]));
+
+
+                        //On attends la quittance du suivant avec timeout
+                        byte[] tampon_quittance = new byte[Constantes.TAILLE_TAMPON_QUITTANCE];
+                        DatagramPacket paquet = new DatagramPacket(tampon_quittance, tampon_quittance.length);
+
+                        check.setSoTimeout(Constantes.MESSAGE_TIMEOUT);
+                        check.receive(paquet);
+
+                        Thread.sleep(PERIODE_CHECK);
+                    } catch (java.net.SocketTimeoutException e) {
+                        initialiseElection();
+                    } catch (SocketException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        applicatif.start();
+    }
+
+    private void initialiseElection(){
 
     }
 
@@ -75,24 +128,24 @@ public class Site {
         ByteBuffer donneesEntieres = ByteBuffer.wrap(paquet.getData());
         int type = donneesEntieres.get();
         int[] aptitudes = new int[Constantes.NOMBRE_DE_SITES];
-        for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+        for (int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i) {
             aptitudes[i] = donneesEntieres.getInt();
         }
 
-        if(aptitudes[id] != -1){
+        if (aptitudes[id] != -1) {
             int eluCourrant = 0;
-            for(int i = 0; i < aptitudes.length; ++i){
-                if(aptitudes[i] >= aptitudes[eluCourrant]){
+            for (int i = 0; i < aptitudes.length; ++i) {
+                if (aptitudes[i] >= aptitudes[eluCourrant]) {
                     eluCourrant = i;
-                // S'il y a une égalité et que l'adresse ip de i est plus petite, alors i devient l'elu
-                }else if (aptitudes[i] == aptitudes[eluCourrant] && (Constantes.ADRESSES_IP[i].compareTo(Constantes.ADRESSES_IP[eluCourrant]) < 0)){
-                    eluCourrant = i ;
+                    // S'il y a une égalité et que l'adresse ip de i est plus petite, alors i devient l'elu
+                } else if (aptitudes[i] == aptitudes[eluCourrant] && (Constantes.ADRESSES_IP[i].compareTo(Constantes.ADRESSES_IP[eluCourrant]) < 0)) {
+                    eluCourrant = i;
                 }
             }
             elu = eluCourrant;
             //TODO envoyer resultat(elu, liste avec mon id)
             estEnElection = false;
-        }else{
+        } else {
             //TODO envoyer annonce
             estEnElection = true;
         }
@@ -103,15 +156,15 @@ public class Site {
         int type = donneesEntieres.get();
         int eluPaquet = donneesEntieres.getInt();
         boolean[] dansListe = new boolean[Constantes.NOMBRE_DE_SITES];
-        for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+        for (int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i) {
             dansListe[i] = donneesEntieres.getInt() == 1;
         }
-        if(dansListe[id]){
+        if (dansListe[id]) {
             //TODO fin
             return;
-        }else if (!estEnElection && elu != id){
+        } else if (!estEnElection && elu != id) {
 
-        } else if (estEnElection){
+        } else if (estEnElection) {
             elu = eluPaquet;
             try {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_RESULTAT);
@@ -120,7 +173,7 @@ public class Site {
                 //Liste d'entier ou l'élément i vaut 1 si le site est présent dans la liste, 0 sinon
                 int[] liste = new int[Constantes.NOMBRE_DE_SITES];
                 liste[id] = 1;
-                for(int i = 0; i < liste.length; ++i){
+                for (int i = 0; i < liste.length; ++i) {
                     byteBuffer.putInt(liste[i]);
                 }
                 envoi(byteBuffer.array(), paquet);
@@ -145,13 +198,13 @@ public class Site {
         //On attends la quittance du suivant avec timeout
         byte[] tampon = new byte[Constantes.TAILLE_TAMPON_QUITTANCE];
         DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
-        try{
+        try {
             envoiSocket.setSoTimeout(Constantes.MESSAGE_TIMEOUT);
             envoiSocket.receive(paquet);
-        } catch (SocketTimeoutException e){
+        } catch (SocketTimeoutException e) {
             //La quittance n'a pas été reçue
             idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
-            if(idSuivant == id){
+            if (idSuivant == id) {
                 //On a fait tout le tour de l'anneau
                 idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
             }
@@ -159,11 +212,11 @@ public class Site {
             envoi(corps, paquetOriginal);
         }
 
-        if(paquet.getData()[0] == Constantes.QUITTANCE){
+        if (paquet.getData()[0] == Constantes.QUITTANCE) {
             ByteBuffer byteBuffer = ByteBuffer.wrap(paquet.getData());
             byte type = byteBuffer.get();
             int id = byteBuffer.getInt();
-            if(id != idSuivant){
+            if (id != idSuivant) {
                 throw new Exception("Quittance reçue du mauvais site");
             }
         }
@@ -172,12 +225,13 @@ public class Site {
     /**
      * @return l'identifiant du site élu actuel
      */
-    public synchronized int getElu(){
+    public synchronized int getElu() {
         return elu;
     }
 
     /**
      * Méthode qui envoie une quittance au site qui a envoyé le paquet en paramètre
+     *
      * @param paquetOriginal
      * @throws IOException
      */
@@ -190,8 +244,8 @@ public class Site {
     /**
      * Méthode qui retourne l'aptitude du site
      */
-    public int getAptitude(){
-         return Constantes.PORTS[id] + Integer.parseInt(Constantes.ADRESSES_IP[id].substring(0,Constantes.ADRESSES_IP[id].lastIndexOf('.')));
+    public int getAptitude() {
+        return Constantes.PORTS[id] + Integer.parseInt(Constantes.ADRESSES_IP[id].substring(0, Constantes.ADRESSES_IP[id].lastIndexOf('.')));
     }
 
 }

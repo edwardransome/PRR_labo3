@@ -1,7 +1,5 @@
 package util;
 
-import java.net.InetAddress;
-
 /**
  * Interface contenant les constantes de l'application permettant de les
  * modifier facilement.
@@ -23,6 +21,7 @@ public interface Constantes {
     // Types de messages
     byte ANNONCE = (byte) 0;
     byte RESULTAT = (byte) 1;
-    byte QUITTANCE = (byte) 2;
+    byte QUITTANCE = (byte) 2; //message de type quittance
+    byte CHECK = (byte) 3; // demande une quittance a un site
 
 }
