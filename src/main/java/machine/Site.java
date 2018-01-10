@@ -42,7 +42,7 @@ public class Site {
 
             public void run() {
                 while(true){ //Boucle principale de réception de message
-                    byte[] tampon = new byte[255]; //TODO constante
+                    byte[] tampon = new byte[Constantes.TAILLE_TAMPON];
                     DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
 
                     try {
@@ -70,6 +70,7 @@ public class Site {
         for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
             aptitudes[i] = donneesEntieres.getInt();
         }
+        
 
 
 
