@@ -11,10 +11,13 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Site {
     //Identifiant du site
     private int id;
+    //Identifiant de l'élu
+    private int elu;
 
     //Adresse et port du site
     private InetAddress adresse;
@@ -70,15 +73,43 @@ public class Site {
         for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
             aptitudes[i] = donneesEntieres.getInt();
         }
-        
 
-
-
-
-
+        if(aptitudes[id] != -1){
+            int maximum = 0;
+            for(int i = 0; i < aptitudes.length; ++i){
+                if(aptitudes[i] >= aptitudes[maximum]){
+                    maximum = i;
+                }else if (aptitudes[i] == aptitudes[maximum]){
+                    //TODO traiter égalité avec formule de la donnée
+                }
+            }
+            elu = maximum;
+            //TODO envoyer resultat(elu, liste avec mon id)
+            estEnElection = false;
+        }else{
+            //TODO envoyer annonce
+            estEnElection = true;
+        }
     }
 
     private void traiterResultat(DatagramPacket paquet) {
+        ByteBuffer donneesEntieres = ByteBuffer.wrap(paquet.getData());
+        int type = donneesEntieres.get();
+        int eluPaquet = donneesEntieres.getInt();
+        boolean[] dansListe = new boolean[Constantes.NOMBRE_DE_SITES];
+        for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+            dansListe[i] = donneesEntieres.getInt() == 1;
+        }
+        if(dansListe[id]){
+            //TODO fin
+            return;
+        }else if (!estEnElection && elu != id){
+
+        } else if (estEnElection){
+            elu = eluPaquet;
+            //TODO envoie
+            estEnElection = false;
+        }
 
     }
 
