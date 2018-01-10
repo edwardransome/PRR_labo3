@@ -148,9 +148,15 @@ public class Site {
         }
     }
 
-    private void envoiQuittance(DatagramPacket paquetOriginal) throws SocketException {
+    /**
+     * Méthode qui envoi une quittance au site qui a envoyé le paquet en paramètre
+     * @param paquetOriginal
+     * @throws IOException
+     */
+    private void envoiQuittance(DatagramPacket paquetOriginal) throws IOException {
         DatagramSocket envoiQuittance = new DatagramSocket();
-        byte[] buffer = new byte[]{Constantes.QUITTANCE, Integer.valueOf(id).byteValue()[3]};
+        byte[] tampon = new byte[]{Constantes.QUITTANCE, Integer.valueOf(id).byteValue()};
+        envoiQuittance.send(new DatagramPacket(tampon, tampon.length, paquetOriginal.getAddress(), paquetOriginal.getPort()));
     }
 
     /**
