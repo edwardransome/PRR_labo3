@@ -1,5 +1,6 @@
 package machine;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import util.Constantes;
 
 import java.io.IOException;
@@ -143,10 +144,44 @@ public class Site {
                 }
             }
             elu = eluCourrant;
-            //TODO envoyer resultat(elu, liste avec mon id)
-            estEnElection = false;
+            //Envoi du message REPONSE
+            ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_RESULTAT);
+            byteBuffer.put(Constantes.RESULTAT);
+            byteBuffer.putInt(elu);
+            //Liste d'entier ou l'élément i vaut 1 si le site est présent dans la liste, 0 sinon
+            int[] liste = new int[Constantes.NOMBRE_DE_SITES];
+            liste[id] = 1;
+            for (int i = 0; i < liste.length; ++i) {
+                byteBuffer.putInt(liste[i]);
+            }
+            try {
+                envoi(byteBuffer.array(), paquet);
+                estEnElection = false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'envoi du datagramme");
+                e.printStackTrace();
+            }
+
         } else {
-            //TODO envoyer annonce
+            ByteBuffer receivedDataBuffer = ByteBuffer.wrap(paquet.getData());
+            ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_ANNONCE);
+            receivedDataBuffer.put(byteBuffer.get()); //Type de message (ANNONCE)
+            //On copie la liste du paquet reçu, sauf pour notre aptitude, qu'on met a jour
+            for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+                if(i == id){
+                    receivedDataBuffer.getInt();
+                    byteBuffer.putInt(getAptitude());
+                }else{
+                    byteBuffer.putInt(receivedDataBuffer.getInt());
+                }
+            }
+            try {
+                envoi(byteBuffer.array(), paquet);
+                estEnElection = false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'envoi du datagramme");
+                e.printStackTrace();
+            }
             estEnElection = true;
         }
     }
@@ -160,27 +195,49 @@ public class Site {
             dansListe[i] = donneesEntieres.getInt() == 1;
         }
         if (dansListe[id]) {
-            //TODO fin
+            //Fin
             return;
-        } else if (!estEnElection && elu != id) {
-
-        } else if (estEnElection) {
-            elu = eluPaquet;
-            try {
-                ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_RESULTAT);
-                byteBuffer.put(Constantes.RESULTAT);
-                byteBuffer.putInt(elu);
-                //Liste d'entier ou l'élément i vaut 1 si le site est présent dans la liste, 0 sinon
-                int[] liste = new int[Constantes.NOMBRE_DE_SITES];
-                liste[id] = 1;
-                for (int i = 0; i < liste.length; ++i) {
-                    byteBuffer.putInt(liste[i]);
+        } else if (!estEnElection && elu != eluPaquet) {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_ANNONCE);
+            //L'index de notre liste correspond au site, donc les sites non
+            //initialisés ont une aptitude initiale de -1
+            byteBuffer.put(Constantes.ANNONCE);
+            for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+                if(i == id){
+                    byteBuffer.putInt(getAptitude());
+                }else{
+                    byteBuffer.putInt(-1);
                 }
+            }
+            try {
                 envoi(byteBuffer.array(), paquet);
+                estEnElection = false;
             } catch (Exception e) {
                 System.err.println("Erreur lors de l'envoi du datagramme");
                 e.printStackTrace();
             }
+        } else if (estEnElection) {
+            elu = eluPaquet;
+            ByteBuffer receivedDataBuffer = ByteBuffer.wrap(paquet.getData());
+            ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_ANNONCE);
+            receivedDataBuffer.put(byteBuffer.get()); //Type de message (RESULTAT)
+            //On copie la liste de sites ayant le résultat, en nous mettant à 1
+            for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+                if(i == id){
+                    receivedDataBuffer.getInt();
+                    byteBuffer.putInt(1);
+                }else{
+                    byteBuffer.putInt(receivedDataBuffer.getInt());
+                }
+            }
+            try {
+                envoi(byteBuffer.array(), paquet);
+                estEnElection = false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'envoi du datagramme");
+                e.printStackTrace();
+            }
+
             estEnElection = false;
         }
 

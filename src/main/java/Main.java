@@ -20,6 +20,17 @@
  cette information, et QUITTANCE, un message de quittance devant être envoyé
  à l'expéditeur d'un message lors de sa réception par un site.
 
+ La structure des messages est ainsi: tout message commence avec un octet
+ décrivant le type du message. Dans le cas d'une ANNONCE, il en suite quatre
+ entiers (Donc quatre fois 4 octets) valant -1 si aucune aptitude n'a été
+ associée à un site, et valant une aptitude sinon. Dans le cas d'un message
+ RESULTAT, la liste de l'algorithme est remplacée par de nouveau quatre entiers.
+ Si le l'entier à l'index i vaut 1, le site i est dans la liste, sinon il
+ l'entier vaut 0 et il ne l'est pas. Pour la QUITTANCE, il y a en plus de
+ l'octet du type un entier valant l'identifiant de l'expediteur. Avec ces
+ structures de paquets, on économise beaucoup de place comparé à l'utilisation
+ par exemple de List Java ou pire, des Map<Site, Aptitude>.
+
  Si un site tombe en panne avant d'envoyer une quittance à l'expéditeur d'un
  message lui étant destiné, la panne est detectée par la durée
  MESSAGE_TIMEOUT, et le site ayant envoyé le message déduira que son successeur
