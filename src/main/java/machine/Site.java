@@ -112,14 +112,14 @@ public class Site {
 
     }
 
-    private void envoi(byte[] corps, InetAddress addr, int port) throws Exception {
+    private void envoi(byte[] corps, InetAddress adr, int port) throws Exception {
         //On envoie la quittance au précédent
         envoiQuittance();
 
         //On envoie le message au suivant
         DatagramSocket envoiSocket = new DatagramSocket();
         envoiSocket.send(new DatagramPacket(corps, corps.length,
-                addr, port));
+                adr, port));
 
         //On attends la quittance du suivant avec timeout
         byte[] tampon = new byte[Constantes.TAILLE_TAMPON_QUITTANCE];
@@ -135,7 +135,7 @@ public class Site {
                 idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
             }
             //Alors envoie le message au suivant
-            envoi(corps, addr, port);
+            envoi(corps, adr, port);
         }
 
         if(paquet.getData()[0] == Constantes.QUITTANCE){
