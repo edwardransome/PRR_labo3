@@ -108,8 +108,19 @@ public class Site {
 
     }
 
-    private void envoi(byte[] corps, InetAddress addr, int port){
+    private void envoi(byte[] corps, InetAddress addr, int port) throws IOException {
+        //On envoit la quittance au précédent
+        envoiQuittance();
+
+        //On envoit le message au suivant
         DatagramSocket envoiSocket = new DatagramSocket();
+        envoiSocket.send(new DatagramPacket(corps, corps.length,
+                addr, port));
+
+        //On attends la quittance du suivant avec timeout
+        byte[] tampon = new byte[]
+
+
     }
 
     /**
