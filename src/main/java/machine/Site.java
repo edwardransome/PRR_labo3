@@ -29,7 +29,7 @@ public class Site {
 
     public Site(int id, int port) {
         this.id = id;
-        this.aptitude=getAptitude(id);
+        this.aptitude=getAptitude();
         this.idSuivant = (id + 1) % Constantes.NOMBRE_DE_SITES;
         try {
             socket = new DatagramSocket(port);
@@ -150,7 +150,7 @@ public class Site {
     }
 
     /**
-     * Méthode qui envoi une quittance au site qui a envoyé le paquet en paramètre
+     * Méthode qui envoie une quittance au site qui a envoyé le paquet en paramètre
      * @param paquetOriginal
      * @throws IOException
      */
