@@ -1,7 +1,6 @@
 package machine;
 
 import util.Constantes;
-import util.MessageType;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,9 +8,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Site {
     //Identifiant du site
@@ -55,9 +51,9 @@ public class Site {
                         e.printStackTrace();
                     }
 
-                    if(paquet.getData()[0] == MessageType.ANNONCE.ordinal()){
+                    if(paquet.getData()[0] == Constantes.ANNONCE){
                         traiterAnnonce(paquet);
-                    }else if (paquet.getData()[0] == MessageType.RESULTAT.ordinal()){
+                    }else if (paquet.getData()[0] == Constantes.RESULTAT){
                         traiterResultat(paquet);
                     }
                 }
