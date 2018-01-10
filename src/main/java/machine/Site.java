@@ -37,24 +37,27 @@ public class Site {
             e.printStackTrace();
         }
 
-        electionManager = new Thread(() -> {
-            while(true){ //Boucle principale de réception de message
-                byte[] tampon = new byte[Constantes.TAILLE_TAMPON];
-                DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
+        electionManager = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) { //Boucle principale de réception de message
+                    byte[] tampon = new byte[Constantes.TAILLE_TAMPON];
+                    DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
 
-                try {
-                    socket.receive(paquet);
-                } catch (IOException e) {
-                    System.err.println("Erreur de reception de paquet");
-                    e.printStackTrace();
-                }
+                    try {
+                        socket.receive(paquet);
+                    } catch (IOException e) {
+                        System.err.println("Erreur de reception de paquet");
+                        e.printStackTrace();
+                    }
 
-                if(paquet.getData()[0] == Constantes.ANNONCE){
-                    traiterAnnonce(paquet);
-                }else if (paquet.getData()[0] == Constantes.RESULTAT){
-                    traiterResultat(paquet);
-                }else{
-                    throw new IllegalArgumentException("Le type du paquet reçu n'est pas reconnu");
+                    if (paquet.getData()[0] == Constantes.ANNONCE) {
+                        Site.this.traiterAnnonce(paquet);
+                    } else if (paquet.getData()[0] == Constantes.RESULTAT) {
+                        Site.this.traiterResultat(paquet);
+                    } else {
+                        throw new IllegalArgumentException("Le type du paquet reçu n'est pas reconnu");
+                    }
                 }
             }
         });
