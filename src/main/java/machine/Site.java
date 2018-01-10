@@ -1,9 +1,16 @@
 package machine;
 
+import util.Constantes;
+import util.MessageType;
+
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 public class Site {
     //Identifiant du site
@@ -31,14 +38,47 @@ public class Site {
             e.printStackTrace();
         }
 
-        electionManager = new Thread() {
-            while(true){ //Boucle principale
-                byte[] tampon = new byte[255]; //TODO constante
-                DatagramPacket packet = new DatagramPacket(tampon, tampon.length);
+        electionManager = new Thread(new Runnable(){
 
-                socket.receive(packet);
+            public void run() {
+                while(true){ //Boucle principale de réception de message
+                    byte[] tampon = new byte[255]; //TODO constante
+                    DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
+
+                    try {
+                        socket.receive(paquet);
+                    } catch (IOException e) {
+                        System.err.println("Erreur de reception de paquet");
+                        e.printStackTrace();
+                    }
+
+                    if(paquet.getData()[0] == MessageType.ANNONCE.ordinal()){
+                        traiterAnnonce(paquet);
+                    }else if (paquet.getData()[0] == MessageType.RESULTAT.ordinal()){
+                        traiterResultat(paquet);
+                    }
+                }
             }
+        });
+
+    }
+
+    private void traiterAnnonce(DatagramPacket paquet) {
+        ByteBuffer donneesEntieres = ByteBuffer.wrap(paquet.getData());
+        int type = donneesEntieres.get();
+        int[] aptitudes = new int[Constantes.NOMBRE_DE_SITES];
+        for(int i = 0; i < Constantes.NOMBRE_DE_SITES; ++i){
+            aptitudes[i] = donneesEntieres.getInt();
         }
+
+
+
+
+
+    }
+
+    private void traiterResultat(DatagramPacket paquet) {
+
     }
 
     /**
