@@ -109,6 +109,10 @@ public class Site {
 
     }
 
+    private void envoi(byte[] corps, InetAddress addr, int port){
+        DatagramSocket envoiSocket = new DatagramSocket();
+    }
+
     /**
      * Méthode utilitaire qui retourne l'aptitude d'un site
      * @param adr
