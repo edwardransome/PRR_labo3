@@ -77,8 +77,10 @@ public class Site {
             for(int i = 0; i < aptitudes.length; ++i){
                 if(aptitudes[i] >= aptitudes[eluCourrant]){
                     eluCourrant = i;
-                }else if (aptitudes[i] == aptitudes[eluCourrant]){
-                    eluCourrant = Constantes.ADRESSES_IP[i].compareTo(Constantes.ADRESSES_IP[eluCourrant]) < 0 ? i : eluCourrant ;
+
+                // S'il y a une égalité et que l'adresse ip de i est plus petite, alors i devient l'elu    //
+                }else if (aptitudes[i] == aptitudes[eluCourrant] && (Constantes.ADRESSES_IP[i].compareTo(Constantes.ADRESSES_IP[eluCourrant]) < 0)){
+                    eluCourrant = i ;
                 }
             }
             elu = eluCourrant;
