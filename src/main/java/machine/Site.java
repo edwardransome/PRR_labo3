@@ -73,15 +73,15 @@ public class Site {
         }
 
         if(aptitudes[id] != -1){
-            int maximum = 0;
+            int eluCourrant = 0;
             for(int i = 0; i < aptitudes.length; ++i){
-                if(aptitudes[i] >= aptitudes[maximum]){
-                    maximum = i;
-                }else if (aptitudes[i] == aptitudes[maximum]){
-                    //TODO traiter égalité avec formule de la donnée
+                if(aptitudes[i] >= aptitudes[eluCourrant]){
+                    eluCourrant = i;
+                }else if (aptitudes[i] == aptitudes[eluCourrant]){
+                    eluCourrant = Constantes.ADRESSES_IP[i].compareTo(Constantes.ADRESSES_IP[eluCourrant]) < 0 ? i : eluCourrant ;
                 }
             }
-            elu = maximum;
+            elu = eluCourrant;
             //TODO envoyer resultat(elu, liste avec mon id)
             estEnElection = false;
         }else{
