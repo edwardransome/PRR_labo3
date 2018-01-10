@@ -3,15 +3,14 @@ package machine;
 import util.Constantes;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.nio.ByteBuffer;
 
 public class Site {
     //Identifiant du site
     private int id;
+    //Identifiant du prochain site dans la liste
+    private int idSuivant;
     //Identifiant de l'élu
     private int elu;
 
@@ -30,6 +29,7 @@ public class Site {
 
     public Site(int id, int port) {
         this.id = id;
+        this.idSuivant = (id + 1) % Constantes.NOMBRE_DE_SITES;
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException e) {
@@ -112,7 +112,7 @@ public class Site {
 
     }
 
-    private void envoi(byte[] corps, InetAddress addr, int port) throws IOException {
+    private void envoi(byte[] corps, InetAddress addr, int port) throws Exception {
         //On envoit la quittance au précédent
         envoiQuittance();
 
@@ -122,9 +122,30 @@ public class Site {
                 addr, port));
 
         //On attends la quittance du suivant avec timeout
-        byte[] tampon = new byte[]
+        byte[] tampon = new byte[Constantes.TAILLE_TAMPON_QUITTANCE];
+        DatagramPacket paquet = new DatagramPacket(tampon, tampon.length);
+        try{
+            envoiSocket.setSoTimeout(Constantes.MESSAGE_TIMEOUT);
+            envoiSocket.receive(paquet);
+        } catch (SocketTimeoutException e){
+            //La quittance n'a pas été reçue
+            idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
+            if(idSuivant == id){
+                //On a fait tout le tour de l'anneau
+                idSuivant = (idSuivant + 1) % Constantes.NOMBRE_DE_SITES;
+            }
+            //Alors envoit le message au suivant
+            envoi(corps, addr, port);
+        }
 
-
+        if(paquet.getData()[0] == Constantes.QUITTANCE){
+            ByteBuffer byteBuffer = ByteBuffer.wrap(paquet.getData());
+            byte type = byteBuffer.get();
+            int id = byteBuffer.getInt();
+            if(id != idSuivant){
+                throw new Exception("Quittance reçue du mauvais site");
+            }
+        }
     }
 
     /**
