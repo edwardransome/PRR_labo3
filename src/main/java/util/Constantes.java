@@ -1,5 +1,7 @@
 package util;
 
+import java.net.InetAddress;
+
 public interface Constantes {
     int PORT_DEFAUT = 6060;
     int NOMBRE_DE_SITES = 4;
@@ -14,4 +16,5 @@ public interface Constantes {
     byte ANNONCE = (byte) 0;
     byte RESULTAT = (byte) 1;
     byte QUITTANCE = (byte) 2;
+
 }
