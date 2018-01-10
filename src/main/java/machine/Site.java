@@ -6,6 +6,12 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 
+/**
+ * Class représentant un site d'un système réparti. Un site possède un
+ * identifiant, un thread gestionnaire et un thread applicatif. Les sites
+ * communiquent entre eux via messages point-à-point UDP dans une topologie
+ * en anneau.
+ */
 public class Site {
     //Identifiant du site
     private int id;
@@ -29,7 +35,7 @@ public class Site {
 
     public Site(int id, int port) {
         this.id = id;
-        this.aptitude=getAptitude();
+        this.aptitude = getAptitude();
         this.idSuivant = (id + 1) % Constantes.NOMBRE_DE_SITES;
         try {
             socket = new DatagramSocket(port);
@@ -107,7 +113,21 @@ public class Site {
 
         } else if (estEnElection){
             elu = eluPaquet;
-            //TODO envoie
+            try {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(Constantes.TAILLE_TAMPON_RESULTAT);
+                byteBuffer.put(Constantes.RESULTAT);
+                byteBuffer.putInt(elu);
+                //Liste d'entier ou l'élément i vaut 1 si le site est présent dans la liste, 0 sinon
+                int[] liste = new int[Constantes.NOMBRE_DE_SITES];
+                liste[id] = 1;
+                for(int i = 0; i < liste.length; ++i){
+                    byteBuffer.putInt(liste[i]);
+                }
+                envoi(byteBuffer.array(), paquet);
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'envoi du datagramme");
+                e.printStackTrace();
+            }
             estEnElection = false;
         }
 
