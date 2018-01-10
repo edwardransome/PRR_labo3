@@ -13,10 +13,10 @@ public class Site {
     private int idSuivant;
     //Identifiant de l'élu
     private int elu;
+    //Aptitude du site
+    private final int aptitude;
 
-    //Adresse et port du site
-    private InetAddress adresse;
-    private int port;
+
     private DatagramSocket socket;
 
     //Booléen retournant vrai si on se trouve dans la phase d'élection et false si on se trouve dans la phase de résultat
@@ -29,6 +29,7 @@ public class Site {
 
     public Site(int id, int port) {
         this.id = id;
+        this.aptitude=getAptitude(id);
         this.idSuivant = (id + 1) % Constantes.NOMBRE_DE_SITES;
         try {
             socket = new DatagramSocket(port);
@@ -149,28 +150,10 @@ public class Site {
     }
 
     /**
-     * Méthode utilitaire qui retourne l'aptitude d'un site
-     * @param adr
-     * @param port
-     * @return
+     * Méthode qui retourne l'aptitude du site
      */
-    public static int getAptitude(InetAddress adr, int port){
-        return port + adr.getAddress()[3];
-    }
-
-    /**
-     * Méthode utilitaire qui détermine la plus grande aptitude parmi deux sites
-     * @param adresseUn
-     * @param portUn
-     * @param adresseDeux
-     * @param portDeux
-     * @return
-     */
-    public static boolean aptitudeHigherThan(InetAddress adresseUn, int portUn,
-                                             InetAddress adresseDeux, int portDeux){
-        return getAptitude(adresseUn, portUn) > getAptitude(adresseDeux, portDeux)
-                ? true
-                : adresseUn.getAddress()[3] < adresseDeux.getAddress()[3];
+    public int getAptitude(){
+         return Constantes.PORTS[id] + Integer.parseInt(Constantes.ADRESSES_IP[id].substring(0,Constantes.ADRESSES_IP[id].lastIndexOf('.')));
     }
 
 }
