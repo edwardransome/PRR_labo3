@@ -61,11 +61,13 @@ public class Site {
                     try {
                         socket.receive(paquet);
 					} catch (java.net.SocketTimeoutException e) {
-						//Si ELECTION_TIMEOUT ms se sont écoulés, on relance une election
+						//Si ELECTION_TIMEOUT ms se sont écoulés, on relance une election.
                         initialiseElection();
+                        continue;
                     } catch (IOException e) {
                         System.err.println("Erreur de reception de paquet");
                         e.printStackTrace();
+                        continue;
                     }
 
                     switch (paquet.getData()[0]) {

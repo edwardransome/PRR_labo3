@@ -32,7 +32,7 @@ public interface Constantes {
     byte ANNONCE = (byte) 0;
     byte RESULTAT = (byte) 1;
     byte QUITTANCE = (byte) 2;
-    //Utilisé par l'applicatif afin de demander juste une quittance a un site afin de voir s'il est up
+    //Utilisé par l'applicatif pour voir si un site est en ligne
     byte VERIFICATION = (byte) 3;
 
 }
