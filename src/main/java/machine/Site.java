@@ -34,6 +34,12 @@ public class Site {
     //Thread applicatif
     private Thread applicatif;
 
+    /**
+     * Construit un site à partir de son identifiant. On part de l'hypothèse
+     * que l'utilisateur ne créé pas deux sites du même identifiant.
+     * @param id
+     * @param port
+     */
     public Site(int id, int port) {
         this.id = id;
         this.aptitude = getAptitude();
@@ -121,6 +127,9 @@ public class Site {
         applicatif.start();
     }
 
+    /**
+     * Démarre une élection en transmettant le premier message ANNONCE
+     */
     private void initialiseElection(){
         estEnElection = true;
 
@@ -139,6 +148,11 @@ public class Site {
         }
     }
 
+    /**
+     * Traite un paquet reçu de type ANNONCE selon l'algorithme d'élection en
+     * anneau avec pannes.
+     * @param paquet
+     */
     private void traiterAnnonce(DatagramPacket paquet) {
         ByteBuffer donneesEntieres = ByteBuffer.wrap(paquet.getData());
         int type = donneesEntieres.get();
@@ -200,6 +214,11 @@ public class Site {
         }
     }
 
+    /**
+     * Traite un paquet reçu de type RESULTAT selon l'algorithme d'élection en
+     * anneau avec pannes.
+     * @param paquet
+     */
     private void traiterResultat(DatagramPacket paquet) {
         ByteBuffer donneesEntieres = ByteBuffer.wrap(paquet.getData());
         int type = donneesEntieres.get();
@@ -257,6 +276,13 @@ public class Site {
 
     }
 
+    /**
+     * Envoi un message au site suivant, en envoyant une quittance au précédent
+     * si le paramètre paquetOriginal n'est pas nul.
+     * @param corps
+     * @param paquetOriginal
+     * @throws Exception
+     */
     private void envoi(byte[] corps, DatagramPacket paquetOriginal) throws Exception {
 
         //S'il vaut null, ça veut dire qu'on initialise une election
@@ -298,6 +324,7 @@ public class Site {
     }
 
     /**
+     * Accesseur synchronizé de l'élu actuel d'un site.
      * @return l'identifiant du site élu actuel
      */
     public synchronized int getElu() {
