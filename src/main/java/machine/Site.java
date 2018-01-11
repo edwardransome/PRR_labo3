@@ -45,6 +45,7 @@ public class Site {
         this.idSuivant = (id + 1) % Constantes.NOMBRE_DE_SITES;
         try {
             socket = new DatagramSocket(port);
+            socket.setSoTimeout(Constantes.ELECTION_TIMEOUT);
         } catch (SocketException e) {
             System.err.println("Erreur lors de l'initialisation du socket du site " + id + ".");
             e.printStackTrace();
@@ -59,6 +60,9 @@ public class Site {
 
                     try {
                         socket.receive(paquet);
+					} catch (java.net.SocketTimeoutException e) {
+						//Si ELECTION_TIMEOUT ms se sont écoulés, on relance une election
+                        initialiseElection();
                     } catch (IOException e) {
                         System.err.println("Erreur de reception de paquet");
                         e.printStackTrace();
@@ -111,7 +115,7 @@ public class Site {
 
                         Thread.sleep(Constantes.PERIODE_VERIFICATION);
                     } catch (java.net.SocketTimeoutException e) {
-                        initialiseElection();
+                        initialiseElection();                    
                     } catch (SocketException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
