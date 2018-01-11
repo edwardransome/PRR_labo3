@@ -24,11 +24,15 @@ public interface Constantes {
     int MESSAGE_TIMEOUT = 200;
     //Timeout pour qu'une annonce parcourt l'anneau entier
     int ELECTION_TIMEOUT = MESSAGE_TIMEOUT * NOMBRE_DE_SITES; //T unités de temps
+    //Temps d'attente entre chaque vérification du status du site élu
+    int PERIODE_VERIFICATION = 2000;
+
 
     //Types de message
     byte ANNONCE = (byte) 0;
     byte RESULTAT = (byte) 1;
-    byte QUITTANCE = (byte) 2; //message de type quittance
-    byte CHECK = (byte) 3; // demande une quittance a un site
+    byte QUITTANCE = (byte) 2;
+    //Utilisé par l'applicatif afin de demander juste une quittance a un site afin de voir s'il est up
+    byte VERIFICATION = (byte) 3;
 
 }

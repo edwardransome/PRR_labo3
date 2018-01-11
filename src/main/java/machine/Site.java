@@ -1,6 +1,5 @@
 package machine;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import util.Constantes;
 
 import java.io.IOException;
@@ -8,7 +7,7 @@ import java.net.*;
 import java.nio.ByteBuffer;
 
 /**
- * Class représentant un site d'un système réparti. Un site possède un
+ * Classe représentant un site d'un système réparti. Un site possède un
  * identifiant, un thread gestionnaire et un thread applicatif. Les sites
  * communiquent entre eux via messages point-à-point UDP dans une topologie
  * en anneau.
@@ -72,7 +71,7 @@ public class Site {
                         case Constantes.RESULTAT:
                             traiterResultat(paquet);
                             break;
-                        case Constantes.CHECK:
+                        case Constantes.VERIFICATION:
                             try {
                                 envoiQuittance(paquet);
                             } catch (IOException e) {
@@ -87,11 +86,10 @@ public class Site {
         });
         electionManager.start();
 
+        //Thread applicatif qui va vérifier si le site elu est en panne chaque Constantes.PERIODE_VERIFICATION ms
         applicatif = new Thread(new Runnable() {
             @Override
             public void run() {
-                final int PERIODE_CHECK = 2000;
-
                 initialiseElection();
 
                 while (true) {
@@ -100,7 +98,7 @@ public class Site {
 
                     try {
                         DatagramSocket check = new DatagramSocket();
-                        byte[] tampon = new byte[]{Constantes.CHECK, Integer.valueOf(id).byteValue()};
+                        byte[] tampon = new byte[]{Constantes.VERIFICATION, Integer.valueOf(id).byteValue()};
                         check.send(new DatagramPacket(tampon, tampon.length, InetAddress.getByName(Constantes.ADRESSES_IP[currentElu]), Constantes.PORTS[currentElu]));
 
 
@@ -111,7 +109,7 @@ public class Site {
                         check.setSoTimeout(Constantes.MESSAGE_TIMEOUT);
                         check.receive(paquet);
 
-                        Thread.sleep(PERIODE_CHECK);
+                        Thread.sleep(Constantes.PERIODE_VERIFICATION);
                     } catch (java.net.SocketTimeoutException e) {
                         initialiseElection();
                     } catch (SocketException e) {
